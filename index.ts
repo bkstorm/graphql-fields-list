@@ -46,7 +46,7 @@ export interface FragmentItem {
  * @access public
  */
 export interface FieldNamesMap {
-  [name: string]: string;
+  [name: string]: string | string[];
 }
 
 /**
@@ -551,13 +551,19 @@ export function fieldsProjection(
         continue;
       }
 
-      let dotName = toDotNotation(stack[0].node, j);
+      let dotName: string | string[] = toDotNotation(stack[0].node, j);
 
       if (transform[dotName]) {
         dotName = transform[dotName];
       }
 
-      map[dotName] = 1;
+      if (dotName instanceof Array) {
+        dotName.forEach(name => {
+          map[name] = 1;
+        });
+      } else {
+        map[dotName] = 1;
+      }
     }
     stack.shift();
   }
