@@ -16,12 +16,12 @@
  * OR IN CONNECTION WITH THE USE OR PERFORMANCE OF THIS SOFTWARE.
  */
 import {
-    ArgumentNode,
-    DirectiveNode,
-    SelectionNode,
-    FragmentDefinitionNode,
-    GraphQLResolveInfo,
-    FieldNode,
+  ArgumentNode,
+  DirectiveNode,
+  SelectionNode,
+  FragmentDefinitionNode,
+  GraphQLResolveInfo,
+  FieldNode,
 } from 'graphql';
 
 /**
@@ -37,7 +37,7 @@ const RX_AST = /\*/g;
  * @access public
  */
 export interface FragmentItem {
-    [name: string]: FragmentDefinitionNode;
+  [name: string]: FragmentDefinitionNode;
 }
 
 /**
@@ -46,7 +46,7 @@ export interface FragmentItem {
  * @access public
  */
 export interface FieldNamesMap {
-    [name: string]: string;
+  [name: string]: string;
 }
 
 /**
@@ -55,44 +55,44 @@ export interface FieldNamesMap {
  * @access public
  */
 export interface FieldsListOptions {
-    /**
-     * Path to a tree branch which should be mapped during fields extraction
-     * @type {string}
-     */
-    path?: string;
+  /**
+   * Path to a tree branch which should be mapped during fields extraction
+   * @type {string}
+   */
+  path?: string;
 
-    /**
-     * Transformation rules which should be used to re-name field names
-     * @type {FieldNamesMap}
-     */
-    transform?: FieldNamesMap;
+  /**
+   * Transformation rules which should be used to re-name field names
+   * @type {FieldNamesMap}
+   */
+  transform?: FieldNamesMap;
 
-    /**
-     * Flag which turns on/off GraphQL directives checks on a fields
-     * and take them into account during fields analysis
-     * @type {boolean}
-     */
-    withDirectives?: boolean;
+  /**
+   * Flag which turns on/off GraphQL directives checks on a fields
+   * and take them into account during fields analysis
+   * @type {boolean}
+   */
+  withDirectives?: boolean;
 
-    /**
-     * Fields skip rule patterns. Usually used to ignore part of request field
-     * subtree. For example if query looks like:
-     * profiles {
-     *   id
-     *   users {
-     *     name
-     *     email
-     *     password
-     *   }
-     * }
-     * and you doo n not care about users, it can be done like:
-     * fieldsList(info, { skip: ['users'] }); // or
-     * fieldsProjection(info, { skip: ['users.*'] }); // more obvious notation
-     *
-     * If you want to skip only exact fields, it can be done as:
-     * fieldsMap(info, { skip: ['users.email', 'users.password'] })
-     */
-    skip?: string[];
+  /**
+   * Fields skip rule patterns. Usually used to ignore part of request field
+   * subtree. For example if query looks like:
+   * profiles {
+   *   id
+   *   users {
+   *     name
+   *     email
+   *     password
+   *   }
+   * }
+   * and you doo n not care about users, it can be done like:
+   * fieldsList(info, { skip: ['users'] }); // or
+   * fieldsProjection(info, { skip: ['users.*'] }); // more obvious notation
+   *
+   * If you want to skip only exact fields, it can be done as:
+   * fieldsMap(info, { skip: ['users.email', 'users.password'] })
+   */
+  skip?: string[];
 }
 
 /**
@@ -101,7 +101,7 @@ export interface FieldsListOptions {
  * @access public
  */
 export interface VariablesValues {
-    [name: string]: any;
+  [name: string]: any;
 }
 
 /**
@@ -111,7 +111,7 @@ export interface VariablesValues {
  * @access public
  */
 export interface FieldsProjection {
-    [name: string]: 1;
+  [name: string]: 1;
 }
 
 /**
@@ -119,9 +119,9 @@ export interface FieldsProjection {
  * @access private
  */
 interface TraverseOptions {
-    fragments: FragmentItem;
-    vars: any;
-    withVars?: boolean;
+  fragments: FragmentItem;
+  vars: any;
+  withVars?: boolean;
 }
 
 /**
@@ -133,10 +133,10 @@ interface TraverseOptions {
  * @access private
  */
 function getNodes(
-    selection: FragmentDefinitionNode | SelectionNode,
+  selection: FragmentDefinitionNode | SelectionNode,
 ): ReadonlyArray<SelectionNode> {
-    return (((((selection || {}) as any).selectionSet || {}) as any)
-        .selections || []) as ReadonlyArray<SelectionNode>;
+  return (((((selection || {}) as any).selectionSet || {}) as any).selections ||
+    []) as ReadonlyArray<SelectionNode>;
 }
 
 /**
@@ -148,10 +148,7 @@ function getNodes(
  * @access private
  */
 function checkValue(name: string, value: boolean): boolean {
-    return name === 'skip'
-        ? !value
-        : name === 'include' ? value : true
-    ;
+  return name === 'skip' ? !value : name === 'include' ? value : true;
 }
 
 /**
@@ -164,18 +161,18 @@ function checkValue(name: string, value: boolean): boolean {
  * @access private
  */
 function verifyDirectiveArg(
-    name: string,
-    arg: ArgumentNode,
-    vars: VariablesValues
+  name: string,
+  arg: ArgumentNode,
+  vars: VariablesValues,
 ): boolean {
-    switch (arg.value.kind) {
-        case 'BooleanValue':
-            return checkValue(name, arg.value.value);
-        case 'Variable':
-            return checkValue(name, vars[arg.value.name.value]);
-    }
+  switch (arg.value.kind) {
+    case 'BooleanValue':
+      return checkValue(name, arg.value.value);
+    case 'Variable':
+      return checkValue(name, vars[arg.value.name.value]);
+  }
 
-    return true;
+  return true;
 }
 
 /**
@@ -187,28 +184,28 @@ function verifyDirectiveArg(
  * @access private
  */
 function verifyDirective(
-    directive: DirectiveNode,
-    vars: VariablesValues,
+  directive: DirectiveNode,
+  vars: VariablesValues,
 ): boolean {
-    const directiveName: string = directive.name.value;
+  const directiveName: string = directive.name.value;
 
-    if (!~['include', 'skip'].indexOf(directiveName)) {
-        return true;
-    }
-
-    let args: any[] = directive.arguments as any[];
-
-    if (!(args && args.length)) {
-        args = [];
-    }
-
-    for (const arg of args) {
-        if (!verifyDirectiveArg(directiveName, arg, vars)) {
-            return false;
-        }
-    }
-
+  if (!~['include', 'skip'].indexOf(directiveName)) {
     return true;
+  }
+
+  let args: any[] = directive.arguments as any[];
+
+  if (!(args && args.length)) {
+    args = [];
+  }
+
+  for (const arg of args) {
+    if (!verifyDirectiveArg(directiveName, arg, vars)) {
+      return false;
+    }
+  }
+
+  return true;
 }
 
 /**
@@ -220,22 +217,22 @@ function verifyDirective(
  * @access private
  */
 function verifyDirectives(
-    directives: ReadonlyArray<DirectiveNode> | undefined,
-    vars: VariablesValues,
+  directives: ReadonlyArray<DirectiveNode> | undefined,
+  vars: VariablesValues,
 ): boolean {
-    if (!directives || !directives.length) {
-        return true;
-    }
-
-    vars = vars || {};
-
-    for (const directive of directives) {
-        if (!verifyDirective(directive, vars)) {
-            return false;
-        }
-    }
-
+  if (!directives || !directives.length) {
     return true;
+  }
+
+  vars = vars || {};
+
+  for (const directive of directives) {
+    if (!verifyDirective(directive, vars)) {
+      return false;
+    }
+  }
+
+  return true;
 }
 
 /**
@@ -248,20 +245,20 @@ function verifyDirectives(
  * @param {TraverseOptions} opts
  */
 function verifyInlineFragment(
-    node: SelectionNode,
-    root: any,
-    opts: TraverseOptions,
-    skip: any,
+  node: SelectionNode,
+  root: any,
+  opts: TraverseOptions,
+  skip: any,
 ) {
-    if (node.kind === 'InlineFragment') {
-        const nodes = getNodes(node);
+  if (node.kind === 'InlineFragment') {
+    const nodes = getNodes(node);
 
-        nodes.length && traverse(nodes, root, opts, skip);
+    nodes.length && traverse(nodes, root, opts, skip);
 
-        return true;
-    }
+    return true;
+  }
 
-    return false;
+  return false;
 }
 
 /**
@@ -271,26 +268,26 @@ function verifyInlineFragment(
  * @return {any} - skip rules tree
  */
 function skipTree(skip: string[]) {
-    const tree: any = {};
+  const tree: any = {};
 
-    for (const pattern of skip) {
-        const props = pattern.split('.');
-        let propTree = tree;
+  for (const pattern of skip) {
+    const props = pattern.split('.');
+    let propTree = tree;
 
-        for (let i = 0, s = props.length; i < s; i++) {
-            const prop = props[i];
-            const all = props[i + 1] === '*';
+    for (let i = 0, s = props.length; i < s; i++) {
+      const prop = props[i];
+      const all = props[i + 1] === '*';
 
-            if (!propTree[prop]) {
-                propTree[prop] = i === s - 1 || all ? true : {};
-                all && i++;
-            }
+      if (!propTree[prop]) {
+        propTree[prop] = i === s - 1 || all ? true : {};
+        all && i++;
+      }
 
-            propTree = propTree[prop];
-        }
+      propTree = propTree[prop];
     }
+  }
 
-    return tree;
+  return tree;
 }
 
 /**
@@ -299,31 +296,31 @@ function skipTree(skip: string[]) {
  * @param skip
  */
 function verifySkip(node: string, skip: any) {
-    if (!skip) {
-        return false;
+  if (!skip) {
+    return false;
+  }
+
+  if (skip[node]) {
+    return skip[node];
+  }
+
+  // lookup through wildcard patterns
+  let nodeTree: any = false;
+  const patterns = Object.keys(skip).filter(pattern => ~pattern.indexOf('*'));
+
+  for (const pattern of patterns) {
+    const rx: RegExp = new RegExp(pattern.replace(RX_AST, '.*'));
+
+    if (rx.test(node)) {
+      nodeTree = skip[pattern];
+
+      if (nodeTree === true) {
+        break;
+      }
     }
+  }
 
-    if (skip[node]) {
-        return skip[node];
-    }
-
-    // lookup through wildcard patterns
-    let nodeTree: any = false;
-    const patterns = Object.keys(skip).filter(pattern => ~pattern.indexOf('*'));
-
-    for (const pattern of patterns) {
-        const rx: RegExp = new RegExp(pattern.replace(RX_AST, '.*'));
-
-        if (rx.test(node)) {
-            nodeTree = skip[pattern];
-
-            if (nodeTree === true) {
-                break;
-            }
-        }
-    }
-
-    return nodeTree;
+  return nodeTree;
 }
 
 /**
@@ -338,42 +335,37 @@ function verifySkip(node: string, skip: any) {
  * @access private
  */
 function traverse(
-    nodes: ReadonlyArray<SelectionNode>,
-    root: any,
-    opts: TraverseOptions,
-    skip: any,
+  nodes: ReadonlyArray<SelectionNode>,
+  root: any,
+  opts: TraverseOptions,
+  skip: any,
 ): any {
-    for (const node of nodes) {
-        if (opts.withVars && !verifyDirectives(node.directives, opts.vars)) {
-            continue;
-        }
-
-        if (verifyInlineFragment(node, root, opts, skip)) {
-            continue;
-        }
-
-        const name = (node as FieldNode).name.value;
-
-        if (opts.fragments[name]) {
-            traverse(getNodes(opts.fragments[name]), root, opts, skip);
-            continue;
-        }
-
-        const nodes = getNodes(node);
-        const nodeSkip = verifySkip(name, skip);
-
-        if (nodeSkip !== true) {
-            root[name] = root[name] || (nodes.length ? {} : false);
-            nodes.length && traverse(
-                nodes,
-                root[name],
-                opts,
-                nodeSkip,
-            );
-        }
+  for (const node of nodes) {
+    if (opts.withVars && !verifyDirectives(node.directives, opts.vars)) {
+      continue;
     }
 
-    return root;
+    if (verifyInlineFragment(node, root, opts, skip)) {
+      continue;
+    }
+
+    const name = (node as FieldNode).name.value;
+
+    if (opts.fragments[name]) {
+      traverse(getNodes(opts.fragments[name]), root, opts, skip);
+      continue;
+    }
+
+    const nodes = getNodes(node);
+    const nodeSkip = verifySkip(name, skip);
+
+    if (nodeSkip !== true) {
+      root[name] = root[name] || (nodes.length ? {} : false);
+      nodes.length && traverse(nodes, root[name], opts, nodeSkip);
+    }
+  }
+
+  return root;
 }
 
 /**
@@ -385,19 +377,19 @@ function traverse(
  * @access private
  */
 function getBranch(tree: any, path?: string): any {
-    if (!path) {
-        return tree;
-    }
-
-    for (const fieldName of path.split('.')) {
-        if (!tree[fieldName]) {
-            return {};
-        }
-
-        tree = tree[fieldName];
-    }
-
+  if (!path) {
     return tree;
+  }
+
+  for (const fieldName of path.split('.')) {
+    if (!tree[fieldName]) {
+      return {};
+    }
+
+    tree = tree[fieldName];
+  }
+
+  return tree;
 }
 
 /**
@@ -409,19 +401,19 @@ function getBranch(tree: any, path?: string): any {
  * @access private
  */
 function verifyInfo(info: GraphQLResolveInfo): SelectionNode | null {
-    if (!info) {
-        return null;
-    }
+  if (!info) {
+    return null;
+  }
 
-    if (!info.fieldNodes && (info as any).fieldASTs) {
-        (info as any).fieldNodes = (info as any).fieldASTs;
-    }
+  if (!info.fieldNodes && (info as any).fieldASTs) {
+    (info as any).fieldNodes = (info as any).fieldASTs;
+  }
 
-    if (!info.fieldNodes) {
-        return null;
-    }
+  if (!info.fieldNodes) {
+    return null;
+  }
 
-    return verifyFieldNode(info);
+  return verifyFieldNode(info);
 }
 
 /**
@@ -432,16 +424,16 @@ function verifyInfo(info: GraphQLResolveInfo): SelectionNode | null {
  * @access private
  */
 function verifyFieldNode(info: GraphQLResolveInfo): FieldNode | null {
-    const fieldNode: FieldNode | undefined = info.fieldNodes.find(
-        (node: FieldNode) =>
-            node && node.name && node.name.value === info.fieldName
-    );
+  const fieldNode: FieldNode | undefined = info.fieldNodes.find(
+    (node: FieldNode) =>
+      node && node.name && node.name.value === info.fieldName,
+  );
 
-    if (!(fieldNode && fieldNode.selectionSet)) {
-        return null;
-    }
+  if (!(fieldNode && fieldNode.selectionSet)) {
+    return null;
+  }
 
-    return fieldNode;
+  return fieldNode;
 }
 
 /**
@@ -452,15 +444,15 @@ function verifyFieldNode(info: GraphQLResolveInfo): FieldNode | null {
  * @access private
  */
 function parseOptions(options?: FieldsListOptions) {
-    if (!options) {
-        return {};
-    }
+  if (!options) {
+    return {};
+  }
 
-    if (options.withDirectives === undefined) {
-        options.withDirectives = true;
-    }
+  if (options.withDirectives === undefined) {
+    options.withDirectives = true;
+  }
 
-    return options;
+  return options;
 }
 
 /**
@@ -471,25 +463,28 @@ function parseOptions(options?: FieldsListOptions) {
  * @access public
  */
 export function fieldsMap(
-    info: GraphQLResolveInfo,
-    options?: FieldsListOptions,
+  info: GraphQLResolveInfo,
+  options?: FieldsListOptions,
 ) {
-    const fieldNode: SelectionNode | null = verifyInfo(info);
+  const fieldNode: SelectionNode | null = verifyInfo(info);
 
-    if (!fieldNode) {
-        return {};
-    }
+  if (!fieldNode) {
+    return {};
+  }
 
-    const { path, withDirectives, skip } = parseOptions(options);
-    const tree = traverse(getNodes(fieldNode), {}, {
-            fragments: info.fragments,
-            vars: info.variableValues,
-            withVars: withDirectives,
-        },
-        skipTree(skip || []),
-    );
+  const { path, withDirectives, skip } = parseOptions(options);
+  const tree = traverse(
+    getNodes(fieldNode),
+    {},
+    {
+      fragments: info.fragments,
+      vars: info.variableValues,
+      withVars: withDirectives,
+    },
+    skipTree(skip || []),
+  );
 
-    return getBranch(tree, path);
+  return getBranch(tree, path);
 }
 
 /**
@@ -503,11 +498,12 @@ export function fieldsMap(
  * @access public
  */
 export function fieldsList(
-    info: GraphQLResolveInfo,
-    options: FieldsListOptions = {},
+  info: GraphQLResolveInfo,
+  options: FieldsListOptions = {},
 ) {
-    return Object.keys(fieldsMap(info, options))
-        .map((field: string) => (options.transform || {})[field] || field);
+  return Object.keys(fieldsMap(info, options)).map(
+    (field: string) => (options.transform || {})[field] || field,
+  );
 }
 
 /**
@@ -520,7 +516,7 @@ export function fieldsList(
  * @access private
  */
 function toDotNotation(parent: string, child: string) {
-    return `${parent ? parent + '.' : ''}${child}`
+  return `${parent ? parent + '.' : ''}${child}`;
 }
 
 /**
@@ -534,57 +530,57 @@ function toDotNotation(parent: string, child: string) {
  * @access public
  */
 export function fieldsProjection(
-    info: GraphQLResolveInfo,
-    options?: FieldsListOptions,
+  info: GraphQLResolveInfo,
+  options?: FieldsListOptions,
 ): FieldsProjection {
-    const tree = fieldsMap(info, options);
-    const stack: any[] = [];
-    const map: FieldsProjection = {};
-    const transform = (options || {}).transform || {};
+  const tree = fieldsMap(info, options);
+  const stack: any[] = [];
+  const map: FieldsProjection = {};
+  const transform = (options || {}).transform || {};
 
-    stack.push({ node: '', tree });
+  stack.push({ node: '', tree });
 
-    while (stack.length) {
-        for (const j of Object.keys(stack[0].tree)) {
-            if (stack[0].tree[j]) {
-                stack.push({
-                    node: toDotNotation(stack[0].node, j),
-                    tree: stack[0].tree[j],
-                });
+  while (stack.length) {
+    for (const j of Object.keys(stack[0].tree)) {
+      if (stack[0].tree[j]) {
+        stack.push({
+          node: toDotNotation(stack[0].node, j),
+          tree: stack[0].tree[j],
+        });
 
-                continue;
-            }
+        continue;
+      }
 
-            let dotName = toDotNotation(stack[0].node, j);
+      let dotName = toDotNotation(stack[0].node, j);
 
-            if (transform[dotName]) {
-                dotName = transform[dotName];
-            }
+      if (transform[dotName]) {
+        dotName = transform[dotName];
+      }
 
-            map[dotName] = 1;
-        }
-        stack.shift();
+      map[dotName] = 1;
     }
+    stack.shift();
+  }
 
-    return map;
+  return map;
 }
 
 // istanbul ignore next
 if (process.env['IS_UNIT_TEST']) {
-    // noinspection JSUnusedGlobalSymbols
-    Object.assign(module.exports, {
-        getNodes,
-        traverse,
-        getBranch,
-        verifyDirectives,
-        verifyDirective,
-        verifyDirectiveArg,
-        checkValue,
-        verifyInfo,
-        verifyFieldNode,
-        verifyInlineFragment,
-        verifySkip,
-        parseOptions,
-        toDotNotation,
-    });
+  // noinspection JSUnusedGlobalSymbols
+  Object.assign(module.exports, {
+    getNodes,
+    traverse,
+    getBranch,
+    verifyDirectives,
+    verifyDirective,
+    verifyDirectiveArg,
+    checkValue,
+    verifyInfo,
+    verifyFieldNode,
+    verifyInlineFragment,
+    verifySkip,
+    parseOptions,
+    toDotNotation,
+  });
 }
