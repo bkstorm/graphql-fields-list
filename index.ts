@@ -501,7 +501,7 @@ export function fieldsList(
   info: GraphQLResolveInfo,
   options: FieldsListOptions = {},
 ) {
-  return Object.keys(fieldsMap(info, options)).map(
+  return Object.keys(fieldsMap(info, options)).flatMap(
     (field: string) => (options.transform || {})[field] || field,
   );
 }

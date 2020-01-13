@@ -13,10 +13,6 @@
     "experimentalDecorators": true,
     "emitDecoratorMetadata": true,
     "target": "es2017",
-    "lib": [
-      "dom",
-      "es2017",
-      "esnext.asynciterable"
-    ]
+    "lib": ["dom", "ES2019", "esnext.asynciterable"]
   }
 }
