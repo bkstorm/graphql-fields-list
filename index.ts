@@ -23,6 +23,7 @@ import {
   GraphQLResolveInfo,
   FieldNode,
 } from 'graphql';
+import { info } from 'console';
 
 /**
  * Pre-compiled wildcard replacement regexp
@@ -93,6 +94,7 @@ export interface FieldsListOptions {
    * fieldsMap(info, { skip: ['users.email', 'users.password'] })
    */
   skip?: string[];
+  namedType?: string;
 }
 
 /**
@@ -122,6 +124,7 @@ interface TraverseOptions {
   fragments: FragmentItem;
   vars: any;
   withVars?: boolean;
+  namedType?: string;
 }
 
 /**
@@ -250,7 +253,11 @@ function verifyInlineFragment(
   opts: TraverseOptions,
   skip: any,
 ) {
-  if (node.kind === 'InlineFragment') {
+  if (
+    node.kind === 'InlineFragment' &&
+    opts.namedType &&
+    opts.namedType === node.typeCondition?.name?.value
+  ) {
     const nodes = getNodes(node);
 
     nodes.length && traverse(nodes, root, opts, skip);
@@ -480,6 +487,7 @@ export function fieldsMap(
       fragments: info.fragments,
       vars: info.variableValues,
       withVars: withDirectives,
+      namedType: options?.namedType,
     },
     skipTree(skip || []),
   );
