@@ -253,14 +253,12 @@ function verifyInlineFragment(
   opts: TraverseOptions,
   skip: any,
 ) {
-  if (
-    node.kind === 'InlineFragment' &&
-    opts.namedType &&
-    opts.namedType === node.typeCondition?.name?.value
-  ) {
-    const nodes = getNodes(node);
+  if (node.kind === 'InlineFragment') {
+    if (!opts.namedType || opts.namedType === node.typeCondition?.name?.value) {
+      const nodes = getNodes(node);
 
-    nodes.length && traverse(nodes, root, opts, skip);
+      nodes.length && traverse(nodes, root, opts, skip);
+    }
 
     return true;
   }
